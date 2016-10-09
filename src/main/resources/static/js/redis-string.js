@@ -7,7 +7,7 @@
                 source: "/keys",
                 select: function (event, ui) {
                     $.get(
-                        "/key",
+                        "/string/get",
                         {
                             keyName: ui.item.value
                         },
@@ -18,6 +18,18 @@
                 }
             }
         );
+
+        $("#stringValueForm").submit(function (event) {
+            event.preventDefault();
+            $.post("/string/set", {
+                keyName: $("#string-key-id").val(),
+                keyValue: $("#string-value-id").val()
+            }, function (data) {
+                if(data.retCode == 'succ'){
+                    alert('succ');
+                }
+            });
+        });
 
     });
 })(jQuery);

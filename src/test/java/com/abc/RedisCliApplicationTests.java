@@ -11,6 +11,6 @@ public class RedisCliApplicationTests {
 
 	@Test
 	public void contextLoads() {
-	}
+    }
 
 }

@@ -44,9 +44,4 @@ public class KeysController {
         }
     }
 
-    @RequestMapping(value = "key", method = RequestMethod.GET)
-    public String getKey(@RequestParam String keyName) {
-        return stringRedisTemplate.opsForValue().get(keyName);
-    }
-
 }
