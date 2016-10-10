@@ -1,5 +1,6 @@
 package com.abc.web;
 
+import com.abc.dto.KeyInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,19 +22,44 @@ public class KeysController {
     private StringRedisTemplate stringRedisTemplate;
 
     @RequestMapping(value = "/keys", method = RequestMethod.GET)
-    public List<String> keys(@RequestParam(required = false, defaultValue = "*", name = "term") String keyPattern) {
+    public List<String> keyList(@RequestParam(required = false, defaultValue = "*", name = "term") String keyPattern) {
+        return this.getKeyList(keyPattern);
+    }
+
+    @RequestMapping(value = "/keyInfoList", method = RequestMethod.GET)
+    public List<KeyInfo> keyInfoList(@RequestParam(required = false, defaultValue = "*", name = "term") String keyPattern) {
+        List<String> keyList = this.getKeyList(keyPattern);
+        List<KeyInfo> keyInfoList = new ArrayList<>();
+        for (String key : keyList) {
+            KeyInfo keyInfo = new KeyInfo();
+            keyInfo.setKey(key);
+            keyInfo.setDataType(stringRedisTemplate.type(key).code());
+            keyInfo.setTtl(stringRedisTemplate.getExpire(key));
+            keyInfoList.add(keyInfo);
+        }
+        return keyInfoList;
+    }
+
+    /**
+     * 根据keyPattern返回部分key
+     *
+     * @param keyPattern
+     * @return
+     */
+    private List<String> getKeyList(String keyPattern) {
         //后置模糊查询
         if (!keyPattern.endsWith("*")) {
             keyPattern += "*";
         }
+
         Set<String> allKeys = stringRedisTemplate.keys(keyPattern);
 
-        //先排序
         List<String> keysList = new ArrayList<>();
         Iterator<String> keyIterator = allKeys.iterator();
         while (keyIterator.hasNext()) {
             keysList.add(keyIterator.next());
         }
+        //排序
         Collections.sort(keysList);
 
         //只返回SUGGEST_SIZE定义的数量

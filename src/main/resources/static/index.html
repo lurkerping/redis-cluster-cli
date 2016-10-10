@@ -1,0 +1,126 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Redis Cluster 后台操作 - 查看keys</title>
+    <meta name="description" content="Redis Cluster 后台操作 - 查看keys">
+    <meta name="keywords" content="help">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Cache-Control" content="no-siteapp"/>
+    <link rel="icon" type="image/png" href="assets/i/favicon.png">
+    <link rel="apple-touch-icon-precomposed" href="assets/i/app-icon72x72@2x.png">
+    <meta name="apple-mobile-web-app-title" content="Amaze UI"/>
+    <link rel="stylesheet" href="amaze-ui/assets/css/amazeui.min.css"/>
+    <link rel="stylesheet" href="amaze-ui/assets/css/admin.css">
+</head>
+
+<body>
+<header class="am-topbar am-topbar-inverse admin-header">
+    <div class="am-topbar-brand">
+        <strong>Redis Cluster</strong>
+        <small>后台操作</small>
+    </div>
+
+    <button class="am-topbar-btn am-topbar-toggle am-btn am-btn-sm am-btn-success am-show-sm-only"
+            data-am-collapse="{target: '#topbar-collapse'}">
+        <span class="am-sr-only">导航切换</span>
+        <span class="am-icon-bars"></span>
+    </button>
+
+    <div class="am-collapse am-topbar-collapse" id="topbar-collapse">
+        <ul class="am-nav am-nav-pills am-topbar-nav am-topbar-right admin-header-list">
+            <li class="am-hide-sm-only"><a href="javascript:;" id="admin-fullscreen">
+                <span class="am-icon-arrows-alt"></span>
+                <span class="admin-fullText">开启全屏</span></a>
+            </li>
+        </ul>
+    </div>
+</header>
+
+<div class="am-cf admin-main">
+    <!-- sidebar start -->
+    <div class="admin-sidebar am-offcanvas" id="admin-offcanvas">
+        <div class="am-offcanvas-bar admin-offcanvas-bar">
+            <ul class="am-list admin-sidebar-list">
+                <li><a href="#"><span class="am-icon-home"></span> 首页</a></li>
+            </ul>
+
+            <div class="am-panel am-panel-default admin-sidebar-panel">
+                <div class="am-panel-bd">
+                    <p><span class="am-icon-bookmark"></span> 公告</p>
+                    <p>时光静好，与君语；细水流年，与君同。—— Amaze UI</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- sidebar end -->
+
+    <!-- content start -->
+    <div class="admin-content">
+        <div class="admin-content-body">
+            <div class="am-cf am-padding am-padding-bottom-0">
+                <div class="am-fl am-cf">
+                    <strong class="am-text-primary am-text-lg">查看Keys</strong> /
+                    <small>View Keys</small>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="am-g">
+                <div class="am-u-sm-12">
+                    <div class="am-input-group">
+                        <input id="keyPattern" type="text" class="am-form-field">
+                            <span class="am-input-group-btn">
+                                <button id="keyPatternBtn" class="am-btn am-btn-default" type="button">go go go! ok, let's go!</button>
+                            </span>
+                    </div>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="am-g">
+                <div class="am-u-sm-12 am-u-sm-centered">
+                    <table id="keyInfoTable" class="am-table am-table-bordered">
+                        <thead>
+                        <tr>
+                            <th>key</th>
+                            <th>dataType</th>
+                            <th>ttl</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <footer class="admin-content-footer">
+            <hr>
+            <p class="am-padding-left">©2016 tiny like superman and batman.</p>
+        </footer>
+
+    </div>
+    <!-- content end -->
+
+</div>
+
+<a href="#" class="am-icon-btn am-icon-th-list am-show-sm-only admin-menu"
+   data-am-offcanvas="{target: '#admin-offcanvas'}"></a>
+
+<footer>
+    <hr>
+    <p class="am-padding-left">© 2014 AllMobilize, Inc. Licensed under MIT license.</p>
+</footer>
+
+<script src="amaze-ui/assets/js/jquery.min.js"></script>
+<script src="amaze-ui/assets/js/amazeui.min.js"></script>
+<script src="amaze-ui/assets/js/app.js"></script>
+<script src="js/redis-index.js"></script>
+</body>
+</html>
