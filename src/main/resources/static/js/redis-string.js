@@ -3,6 +3,20 @@
 
     $(function () {
 
+        var key = $.getParam("key");
+        if (key != null && key.length > 0) {
+            $("#string-key-id").val(key);
+            $.get(
+                "/string/get",
+                {
+                    keyName: key
+                },
+                function (data) {
+                    $("#string-value-id").val(data);
+                }
+            );
+        }
+
         $("#string-key-id").autocomplete({
                 source: "/keys",
                 select: function (event, ui) {
@@ -25,7 +39,7 @@
                 keyName: $("#string-key-id").val(),
                 keyValue: $("#string-value-id").val()
             }, function (data) {
-                if(data.retCode == 'succ'){
+                if (data.retCode == 'succ') {
                     alert('succ');
                 }
             });
