@@ -25,5 +25,13 @@
                 });
             });
         });
+
+        $("#keyInfoTable tbody").on("click", "tr", function () {
+            var key = $("td:first-child", $(this)).text();
+            var type = $("td:nth-child(2)", $(this)).text();
+            var url = "/redis-" + type + ".html?key=" + key;
+            window.location.href = url;
+        });
+
     });
 })(jQuery);
