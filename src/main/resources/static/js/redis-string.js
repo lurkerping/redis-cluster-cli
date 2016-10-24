@@ -3,9 +3,7 @@
 
     $(function () {
 
-        var key = $.getParam("key");
-        if (key != null && key.length > 0) {
-            $("#string-key-id").val(key);
+        function refreshStringValue(key) {
             $.get(
                 "/string/get",
                 {
@@ -17,18 +15,30 @@
             );
         }
 
+        function refreshStringTtl(key) {
+            $.get(
+                "/string/getTtl",
+                {
+                    keyName: key
+                },
+                function (data) {
+                    $("#string-ttl-id").val(data);
+                }
+            );
+        }
+
+        var key = $.getParam("key");
+        if (key != null && key.length > 0) {
+            $("#string-key-id").val(key);
+            refreshStringValue(key);
+            refreshStringTtl(key);
+        }
+
         $("#string-key-id").autocomplete({
                 source: "/keys",
                 select: function (event, ui) {
-                    $.get(
-                        "/string/get",
-                        {
-                            keyName: ui.item.value
-                        },
-                        function (data) {
-                            $("#string-value-id").val(data);
-                        }
-                    );
+                    refreshStringValue(ui.item.value);
+                    refreshStringTtl(ui.item.value);
                 }
             }
         );
@@ -37,12 +47,19 @@
             event.preventDefault();
             $.post("/string/set", {
                 keyName: $("#string-key-id").val(),
-                keyValue: $("#string-value-id").val()
+                keyValue: $("#string-value-id").val(),
+                ttl: $("#string-ttl-id").val()
             }, function (data) {
                 if (data.retCode == 'succ') {
                     alert('succ');
                 }
             });
+        });
+
+        $("#newValueBtn").click(function () {
+            var key = $("#string-key-id").val();
+            refreshStringValue(key);
+            refreshStringTtl(key);
         });
 
     });
