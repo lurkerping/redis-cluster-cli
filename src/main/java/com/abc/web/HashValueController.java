@@ -10,10 +10,12 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/hash")
@@ -35,6 +37,11 @@ public class HashValueController {
         }else{
             return hashOperations.entries(key);
         }
+    }
+
+    @RequestMapping(value = "/getTtl", method = RequestMethod.GET)
+    public Long getTtl(@RequestParam String keyName) {
+        return stringRedisTemplate.getExpire(keyName, TimeUnit.MILLISECONDS);
     }
 
     @RequestMapping(value = "/set", method = RequestMethod.POST)
