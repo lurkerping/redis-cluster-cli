@@ -4,9 +4,6 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 
-/**
- * Created by xiaopengyu on 2016/10/9.
- */
 public class ResponseData implements Serializable {
 
     private String retCode;

@@ -2,9 +2,6 @@ package com.abc.dto;
 
 import java.io.Serializable;
 
-/**
- * Created by xiaopengyu on 2016/10/10.
- */
 public class KeyInfo implements Serializable {
 
     private String key = null;

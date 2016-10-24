@@ -15,9 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by xiaopengyu on 2016/10/2.
- */
 @RestController
 @RequestMapping("/hash")
 @Validated

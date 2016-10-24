@@ -5,9 +5,6 @@ import org.springframework.data.redis.connection.RedisClusterNode;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by xiaopengyu on 2016/10/3.
- */
 public class MyRedisClusterNode {
 
     private RedisClusterNode node = null;

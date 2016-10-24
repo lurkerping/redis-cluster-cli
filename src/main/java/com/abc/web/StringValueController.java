@@ -11,9 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.*;
 
-/**
- * Created by xiaopengyu on 2016/10/2.
- */
 @RestController
 @RequestMapping("/string")
 public class StringValueController {
