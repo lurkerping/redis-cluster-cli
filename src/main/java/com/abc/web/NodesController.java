@@ -1,7 +1,9 @@
 package com.abc.web;
 
+import com.abc.dto.HostInfo;
 import com.abc.dto.MyRedisClusterNode;
 import com.abc.dto.MySlotRange;
+import com.abc.utils.JedisConnectionFactoryHolder;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.RedisClusterNode;
@@ -19,11 +21,15 @@ import java.util.*;
 public class NodesController {
 
     @Autowired
+    private HostInfo hostInfo;
+
+    @Autowired
     private JedisConnectionFactory jedisConnectionFactory;
 
     @RequestMapping(value = "/nodes", method = RequestMethod.GET)
     public List<MyRedisClusterNode> nodes() {
-        Iterable<RedisClusterNode> nodeIterable = jedisConnectionFactory.getClusterConnection().clusterGetNodes();
+        Iterable<RedisClusterNode> nodeIterable = JedisConnectionFactoryHolder.getInstance().getJedisConnectionFactory(hostInfo.getNode(),
+                jedisConnectionFactory).getClusterConnection().clusterGetNodes();
         List<RedisClusterNode> nodeList = this.sort(nodeIterable);
         return this.toMyRedisClusterNode(nodeList);
     }

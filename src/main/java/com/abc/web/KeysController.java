@@ -1,6 +1,8 @@
 package com.abc.web;
 
+import com.abc.dto.HostInfo;
 import com.abc.dto.KeyInfo;
+import com.abc.utils.StringRedisTemplateHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +20,9 @@ public class KeysController {
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
+    @Autowired
+    private HostInfo hostInfo;
+
     @RequestMapping(value = "/keys", method = RequestMethod.GET)
     public List<String> keyList(@RequestParam(required = false, defaultValue = "*", name = "term") String keyPattern) {
         return this.getKeyList(keyPattern);
@@ -30,8 +35,8 @@ public class KeysController {
         for (String key : keyList) {
             KeyInfo keyInfo = new KeyInfo();
             keyInfo.setKey(key);
-            keyInfo.setDataType(stringRedisTemplate.type(key).code());
-            keyInfo.setTtl(stringRedisTemplate.getExpire(key));
+            keyInfo.setDataType(StringRedisTemplateHolder.getInstance().getStringRedisTemplate(hostInfo.getNode(), stringRedisTemplate).type(key).code());
+            keyInfo.setTtl(StringRedisTemplateHolder.getInstance().getStringRedisTemplate(hostInfo.getNode(), stringRedisTemplate).getExpire(key));
             keyInfoList.add(keyInfo);
         }
         return keyInfoList;
@@ -49,7 +54,7 @@ public class KeysController {
             keyPattern += "*";
         }
 
-        Set<String> allKeys = stringRedisTemplate.keys(keyPattern);
+        Set<String> allKeys = StringRedisTemplateHolder.getInstance().getStringRedisTemplate(hostInfo.getNode(), stringRedisTemplate).keys(keyPattern);
 
         List<String> keysList = new ArrayList<>();
         Iterator<String> keyIterator = allKeys.iterator();

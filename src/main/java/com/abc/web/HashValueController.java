@@ -1,7 +1,9 @@
 package com.abc.web;
 
 import com.abc.common.MyConstants;
+import com.abc.dto.HostInfo;
 import com.abc.dto.ResponseData;
+import com.abc.utils.StringRedisTemplateHolder;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,30 +25,33 @@ import java.util.concurrent.TimeUnit;
 public class HashValueController {
 
     @Autowired
+    private HostInfo hostInfo;
+
+    @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
     @RequestMapping(value = "/get", method = RequestMethod.GET)
     public Map<String, String> setHash(@NotBlank String key, String hashKey) {
-        HashOperations<String, String, String> hashOperations = stringRedisTemplate.opsForHash();
+        HashOperations<String, String, String> hashOperations = StringRedisTemplateHolder.getInstance().getStringRedisTemplate(hostInfo.getNode(), stringRedisTemplate).opsForHash();
         if (StringUtils.isNotBlank(hashKey)) {
             Map<String, String> result = new HashMap<>();
-            if(hashOperations.hasKey(key, hashKey)){
+            if (hashOperations.hasKey(key, hashKey)) {
                 result.put(hashKey, hashOperations.get(key, hashKey));
             }
             return result;
-        }else{
+        } else {
             return hashOperations.entries(key);
         }
     }
 
     @RequestMapping(value = "/getTtl", method = RequestMethod.GET)
     public Long getTtl(@RequestParam String keyName) {
-        return stringRedisTemplate.getExpire(keyName, TimeUnit.MILLISECONDS);
+        return StringRedisTemplateHolder.getInstance().getStringRedisTemplate(hostInfo.getNode(), stringRedisTemplate).getExpire(keyName, TimeUnit.MILLISECONDS);
     }
 
     @RequestMapping(value = "/set", method = RequestMethod.POST)
     public ResponseData setHash(@NotBlank String key, @NotBlank String hashKey, @NotBlank String value) {
-        stringRedisTemplate.opsForHash().put(key, hashKey, value);
+        StringRedisTemplateHolder.getInstance().getStringRedisTemplate(hostInfo.getNode(), stringRedisTemplate).opsForHash().put(key, hashKey, value);
         return new ResponseData(MyConstants.CODE_SUCC, "更新成功");
     }
 
