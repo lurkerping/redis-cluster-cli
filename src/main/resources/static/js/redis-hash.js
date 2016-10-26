@@ -34,26 +34,38 @@
             refreshStringTtl(key);
         }
 
-        $("#hashValueForm").submit(function (event) {
-            event.preventDefault();
-            $.post("/hash/set", {
-                key: $("#hash-key-id").val(),
-                hashKey: "name",
-                value:"xyz"
-            }, function (data) {
-                if(data.retCode == 'succ'){
-                    alert('succ');
-                }
-            });
-        });
-
-
         $("#queryBtn").click(function (event) {
             event.preventDefault();
             var key = $("#hash-key-id").val();
             refreshHashValue(key);
             refreshStringTtl(key);
-        })
+        });
+
+        $("#entriesTable tbody").on("click", "tr td:last-child", function () {
+            var td = $(this);
+            if($("input", td).length > 0){
+                return;
+            }
+            var value = td.text();
+            td.text("");// clear
+            td.append("<input type='text'>");
+            $("input", td).val(value);
+        });
+
+        $("#entriesTable tbody").on("blur", "tr input", function () {
+            var input = $(this);
+            var value = input.val();
+            var name = $("td:first", input.parent().parent()).text();
+            $.post("/hash/set", {
+                key: $("#hash-key-id").val(),
+                hashKey: name,
+                value:value
+            }, function (data) {
+                if(data.retCode == 'succ'){
+                    input.parent().text(value);
+                }
+            });
+        });
 
     });
 })(jQuery);
