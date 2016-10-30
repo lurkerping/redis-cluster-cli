@@ -40,7 +40,7 @@ public class StringValueController {
         } else {
             StringRedisTemplateHolder.getInstance().getStringRedisTemplate(hostInfo.getNode(), stringRedisTemplate).opsForValue().set(keyName, keyValue);
         }
-        return new ResponseData(MyConstants.CODE_SUCC, "更新成功");
+        return new ResponseData(MyConstants.CODE_SUCC, "update success!");
     }
 
 }

@@ -52,7 +52,7 @@ public class HashValueController {
     @RequestMapping(value = "/set", method = RequestMethod.POST)
     public ResponseData setHash(@NotBlank String key, @NotBlank String hashKey, @NotBlank String value) {
         StringRedisTemplateHolder.getInstance().getStringRedisTemplate(hostInfo.getNode(), stringRedisTemplate).opsForHash().put(key, hashKey, value);
-        return new ResponseData(MyConstants.CODE_SUCC, "更新成功");
+        return new ResponseData(MyConstants.CODE_SUCC, "update success!");
     }
 
 }

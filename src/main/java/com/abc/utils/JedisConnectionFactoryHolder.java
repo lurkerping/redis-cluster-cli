@@ -43,7 +43,7 @@ public class JedisConnectionFactoryHolder {
             if (jedisConnectionFactory.getClusterConnection() != null && "PONG".equalsIgnoreCase(jedisConnectionFactory.getClusterConnection().ping())) {
                 simpleMap.put(node, jedisConnectionFactory);
             } else {
-                throw new RuntimeException("连接redis cluster失败,node:" + node);
+                throw new RuntimeException(" fail to connect redis cluster, node:" + node);
             }
         }
     }

@@ -43,13 +43,9 @@ public class KeysController {
     }
 
     /**
-     * 根据keyPattern返回部分key
-     *
-     * @param keyPattern
-     * @return
+     * get a key list by keyPattern
      */
     private List<String> getKeyList(String keyPattern) {
-        //后置模糊查询
         if (!keyPattern.endsWith("*")) {
             keyPattern += "*";
         }
@@ -61,10 +57,8 @@ public class KeysController {
         while (keyIterator.hasNext()) {
             keysList.add(keyIterator.next());
         }
-        //排序
         Collections.sort(keysList);
 
-        //只返回SUGGEST_SIZE定义的数量
         if (keysList.size() > SUGGEST_SIZE) {
             return keysList.subList(0, 10);
         } else {

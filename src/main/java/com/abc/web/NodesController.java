@@ -35,7 +35,12 @@ public class NodesController {
     }
 
     /**
-     * 根据主-从，主-从的顺序排列
+     * sort by
+     * |master1
+     * |--slave1a
+     * |--slave1b
+     * |master2
+     * |--slave2
      */
     private List<RedisClusterNode> sort(Iterable<RedisClusterNode> nodeIterable) {
         final Iterator<RedisClusterNode> nodeIterator = nodeIterable.iterator();
@@ -43,7 +48,6 @@ public class NodesController {
         while (nodeIterator.hasNext()) {
             nodeList.add(nodeIterator.next());
         }
-        //根据masterId+Id的自然顺序排列即可
         Collections.sort(nodeList, new Comparator<RedisClusterNode>() {
             @Override
             public int compare(RedisClusterNode o1, RedisClusterNode o2) {
@@ -56,7 +60,7 @@ public class NodesController {
     }
 
     /**
-     * 原生的RedisClusterNode之后成MyRedisClusterNode
+     * transform the origin RedisClusterNode to MyRedisClusterNode
      */
     private List<MyRedisClusterNode> toMyRedisClusterNode(List<RedisClusterNode> nodeList) {
         List<MyRedisClusterNode> myNodeList = new ArrayList<>();
