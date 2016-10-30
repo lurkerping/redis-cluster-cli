@@ -1,5 +1,6 @@
 package com.abc.utils;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,7 +23,7 @@ public class StringRedisTemplateHolder {
     }
 
     public StringRedisTemplate getStringRedisTemplate(String node, StringRedisTemplate defaultTemplate) {
-        StringRedisTemplate stringRedisTemplate = simpleMap.get(node);
+        StringRedisTemplate stringRedisTemplate = StringUtils.isBlank(node) ? defaultTemplate : simpleMap.get(node);
         return stringRedisTemplate == null ? defaultTemplate : stringRedisTemplate;
     }
 

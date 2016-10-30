@@ -1,5 +1,6 @@
 package com.abc.utils;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.connection.RedisClusterConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import redis.clients.jedis.JedisPoolConfig;
@@ -26,7 +27,7 @@ public class JedisConnectionFactoryHolder {
     }
 
     public synchronized JedisConnectionFactory getJedisConnectionFactory(String node, JedisConnectionFactory defaultFactory) {
-        JedisConnectionFactory jedisConnectionFactory = simpleMap.get(node);
+        JedisConnectionFactory jedisConnectionFactory = StringUtils.isBlank(node) ? defaultFactory : simpleMap.get(node);
         return jedisConnectionFactory == null ? defaultFactory : jedisConnectionFactory;
     }
 
