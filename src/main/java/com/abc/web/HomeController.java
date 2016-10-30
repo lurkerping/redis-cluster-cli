@@ -3,7 +3,7 @@ package com.abc.web;
 import com.abc.common.MyConstants;
 import com.abc.dto.HostInfo;
 import com.abc.dto.ResponseData;
-import com.abc.utils.StringRedisTemplateHolder;
+import com.abc.utils.JedisClusterHolder;
 import org.hibernate.validator.constraints.NotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,13 +29,13 @@ public class HomeController {
     @RequestMapping(value = "/connect", method = RequestMethod.POST)
     public ResponseData connect(@NotBlank String node) {
         try {
-            StringRedisTemplateHolder.getInstance().register(node);
+            JedisClusterHolder.getInstance().register(node);
             hostInfo.setNode(node);
         } catch (Exception e) {
-            logger.error("连接redis cluster失败,hostInfo:" + node, e);
-            return new ResponseData(MyConstants.CODE_ERR, "连接失败");
+            logger.error("fail to connect redis cluster, hostInfo:" + node, e);
+            return new ResponseData(MyConstants.CODE_ERR, "connect fail!");
         }
-        return new ResponseData(MyConstants.CODE_SUCC, "连接成功");
+        return new ResponseData(MyConstants.CODE_SUCC, "connect success!");
     }
 
 }

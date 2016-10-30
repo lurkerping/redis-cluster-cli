@@ -2,15 +2,19 @@ package com.abc.web;
 
 import com.abc.dto.HostInfo;
 import com.abc.dto.KeyInfo;
-import com.abc.utils.StringRedisTemplateHolder;
+import com.abc.utils.JedisClusterHolder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.ScanParams;
+import redis.clients.jedis.ScanResult;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @RestController
 public class KeysController {
@@ -18,7 +22,7 @@ public class KeysController {
     public static final int SUGGEST_SIZE = 10;
 
     @Autowired
-    private StringRedisTemplate stringRedisTemplate;
+    private JedisCluster jedisCluster;
 
     @Autowired
     private HostInfo hostInfo;
@@ -35,8 +39,8 @@ public class KeysController {
         for (String key : keyList) {
             KeyInfo keyInfo = new KeyInfo();
             keyInfo.setKey(key);
-            keyInfo.setDataType(StringRedisTemplateHolder.getInstance().getStringRedisTemplate(hostInfo.getNode(), stringRedisTemplate).type(key).code());
-            keyInfo.setTtl(StringRedisTemplateHolder.getInstance().getStringRedisTemplate(hostInfo.getNode(), stringRedisTemplate).getExpire(key));
+            keyInfo.setDataType(JedisClusterHolder.getInstance().getCluster(hostInfo.getNode(), jedisCluster).type(key));
+            keyInfo.setTtl(JedisClusterHolder.getInstance().getCluster(hostInfo.getNode(), jedisCluster).ttl(key));
             keyInfoList.add(keyInfo);
         }
         return keyInfoList;
@@ -50,13 +54,12 @@ public class KeysController {
             keyPattern += "*";
         }
 
-        Set<String> allKeys = StringRedisTemplateHolder.getInstance().getStringRedisTemplate(hostInfo.getNode(), stringRedisTemplate).keys(keyPattern);
+        ScanParams scanParams = new ScanParams();
+        scanParams.count(SUGGEST_SIZE);
+        scanParams.match(keyPattern);
+        ScanResult<String> scanResult = JedisClusterHolder.getInstance().getCluster(hostInfo.getNode(), jedisCluster).scan("0", scanParams);
 
-        List<String> keysList = new ArrayList<>();
-        Iterator<String> keyIterator = allKeys.iterator();
-        while (keyIterator.hasNext()) {
-            keysList.add(keyIterator.next());
-        }
+        List<String> keysList = scanResult.getResult();
         Collections.sort(keysList);
 
         if (keysList.size() > SUGGEST_SIZE) {
