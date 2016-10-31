@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * a map containing some Jedis Cluster Objects
  */
-public class JedisClusterHolder {
+public final class JedisClusterHolder {
 
     public static final JedisClusterHolder instance = new JedisClusterHolder();
 

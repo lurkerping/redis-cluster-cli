@@ -1,21 +1,12 @@
 package com.abc.web;
 
-import com.abc.dto.HostInfo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
-import redis.clients.jedis.JedisCluster;
 
 /**
  * show redis cluster nodes
  */
 @RestController
-public class NodesController {
-
-    @Autowired
-    private HostInfo hostInfo;
-
-    @Autowired
-    private JedisCluster jedisCluster;
+public class NodesController extends BaseController {
 
 //    @RequestMapping(value = "/nodes", method = RequestMethod.GET)
 //    public List<MyRedisClusterNode> nodes() {
