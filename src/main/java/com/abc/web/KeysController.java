@@ -5,10 +5,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -53,8 +59,18 @@ public class KeysController extends BaseController {
 
         Map<String, JedisPool> nodes = getJedisCluster().getClusterNodes();
         for (Map.Entry<String, JedisPool> entry : nodes.entrySet()) {
-            ScanResult<String> scanResult = entry.getValue().getResource().scan("0", scanParams);
-            keysList.addAll(scanResult.getResult());
+            Jedis jedis = null;
+            try {
+                jedis = entry.getValue().getResource();
+                if (isMaster(jedis.clusterNodes(), jedis.getClient().getHost() + ":" + jedis.getClient().getPort())) {
+                    ScanResult<String> scanResult = jedis.scan("0", scanParams);
+                    keysList.addAll(scanResult.getResult());
+                }
+            } finally {
+                if (jedis != null) {
+                    jedis.close();
+                }
+            }
         }
         Collections.sort(keysList);
 
@@ -63,6 +79,21 @@ public class KeysController extends BaseController {
         } else {
             return keysList;
         }
+    }
+
+    private boolean isMaster(String clusterNodes, String hostAndPort) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(clusterNodes.getBytes(StandardCharsets.UTF_8))))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] clusterNode = line.split(" ");
+                if (hostAndPort.equals(clusterNode[1]) && clusterNode[2].indexOf("master") > 0) {
+                    return true;
+                }
+            }
+        } catch (IOException e) {
+            //not gonna happen
+        }
+        return false;
     }
 
 }
