@@ -15,20 +15,20 @@
         }
 
         function loadNodes() {
-            // $.getJSON("/nodes", function (data) {
-            //     $("#nodesTable tbody").empty();
-            //     $.each(data, function (index, myNode) {
-            //         var tr = $("<tr/>");
-            //         tr.append("<td>" + myNode.node.type + "</td>");
-            //         tr.append("<td>" + myNode.node.id + "</td>");
-            //         tr.append("<td>" + myNode.node.host + "</td>");
-            //         tr.append("<td>" + myNode.node.port + "</td>");
-            //         tr.append("<td>" + formatMySlotRangeList(myNode.mySlotRangeList) + "</td>");
-            //         tr.append("<td>" + myNode.node.linkState + "</td>");
-            //         tr.append("<td>" + myNode.node.flags + "</td>");
-            //         $("#nodesTable tbody").append(tr);
-            //     });
-            // });
+            $.getJSON("/nodes", function (data) {
+                $("#nodesTable tbody").empty();
+                $.each(data, function (index, myNode) {
+                    var tr = $("<tr/>");
+                    tr.append("<td>" + myNode.node.type + "</td>");
+                    tr.append("<td>" + myNode.node.id + "</td>");
+                    tr.append("<td>" + myNode.node.host + "</td>");
+                    tr.append("<td>" + myNode.node.port + "</td>");
+                    tr.append("<td>" + formatMySlotRangeList(myNode.mySlotRangeList) + "</td>");
+                    tr.append("<td>" + myNode.node.linkState + "</td>");
+                    tr.append("<td>" + myNode.node.flags + "</td>");
+                    $("#nodesTable tbody").append(tr);
+                });
+            });
         }
 
         loadNodes();
@@ -37,7 +37,7 @@
             event.preventDefault();
             var hostInfo = $("#hostInfo").val();
             $.post("/home/connect", {node: hostInfo}, function (data) {
-                if(data.retCode == "succ"){
+                if (data.retCode == "succ") {
                     loadNodes();
                 }
                 alert(data.retMsg);

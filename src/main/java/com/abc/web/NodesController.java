@@ -1,6 +1,13 @@
 package com.abc.web;
 
+import com.abc.dto.MyRedisClusterNode;
+import com.abc.utils.JedisClusterHolder;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * show redis cluster nodes
@@ -8,14 +15,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class NodesController extends BaseController {
 
-//    @RequestMapping(value = "/nodes", method = RequestMethod.GET)
-//    public List<MyRedisClusterNode> nodes() {
-//        Iterable<RedisClusterNode> nodeIterable = JedisConnectionFactoryHolder.getInstance().getJedisConnectionFactory(hostInfo.getNode(),
-//                jedisConnectionFactory).getClusterConnection().clusterGetNodes();
-//        List<RedisClusterNode> nodeList = this.sort(nodeIterable);
-//        return this.toMyRedisClusterNode(nodeList);
-//    }
-//
+    @RequestMapping(value = "/nodes", method = RequestMethod.GET)
+    public List<MyRedisClusterNode> nodes() {
+        List<MyRedisClusterNode> nodes = JedisClusterHolder.getInstance().getNodes(hostInfo.getNode());
+        if (nodes == null) {
+            nodes = new ArrayList<>();
+        }
+        return nodes;
+    }
+
 //    /**
 //     * sort by
 //     * |master1
@@ -39,45 +47,6 @@ public class NodesController extends BaseController {
 //            }
 //        });
 //        return nodeList;
-//    }
-//
-//    /**
-//     * transform the origin RedisClusterNode to MyRedisClusterNode
-//     */
-//    private List<MyRedisClusterNode> toMyRedisClusterNode(List<RedisClusterNode> nodeList) {
-//        List<MyRedisClusterNode> myNodeList = new ArrayList<>();
-//        for (RedisClusterNode node : nodeList) {
-//            myNodeList.add(this.parseSlotRange(node));
-//        }
-//        return myNodeList;
-//    }
-//
-//    MyRedisClusterNode parseSlotRange(RedisClusterNode node) {
-//        MyRedisClusterNode myNode = new MyRedisClusterNode(node);
-//        int[] slotsArray = node.getSlotRange().getSlotsArray();
-//        int len = slotsArray.length;
-//        if (len == 0) {
-//            return myNode;
-//        }
-//        if (len == 1) {
-//            myNode.addMySlotRange(new MySlotRange(slotsArray[0], slotsArray[0]));
-//        }
-//        int index = 0;
-//        int pre = slotsArray[index];
-//        for (int i = 1; i < len; i++) {
-//            int cur = slotsArray[i];
-//            // another slot
-//            if (pre + 1 != cur) {
-//                myNode.addMySlotRange(new MySlotRange(slotsArray[index], pre));
-//                index = i;
-//            }
-//            pre = cur;
-//            // the end
-//            if (i == len - 1) {
-//                myNode.addMySlotRange(new MySlotRange(slotsArray[index], pre));
-//            }
-//        }
-//        return myNode;
 //    }
 
 }
