@@ -1,5 +1,6 @@
 package com.abc.web;
 
+import com.abc.common.MyExecutors;
 import com.abc.dto.KeyInfo;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -19,6 +20,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 @RestController
 public class KeysController extends BaseController {
@@ -27,7 +31,12 @@ public class KeysController extends BaseController {
 
     @RequestMapping(value = "/keys", method = RequestMethod.GET)
     public List<String> keyList(@RequestParam(required = false, defaultValue = "*", name = "term") String keyPattern) {
-        return this.getKeyList(keyPattern);
+        List<String> keysList = this.getKeyList(keyPattern);
+        if (keysList.size() > SUGGEST_SIZE) {
+            return keysList.subList(0, SUGGEST_SIZE);
+        } else {
+            return keysList;
+        }
     }
 
     @RequestMapping(value = "/keyInfoList", method = RequestMethod.GET)
@@ -51,34 +60,39 @@ public class KeysController extends BaseController {
         if (!keyPattern.endsWith("*")) {
             keyPattern += "*";
         }
-        ScanParams scanParams = new ScanParams();
+        final ScanParams scanParams = new ScanParams();
         scanParams.count(SUGGEST_SIZE);
         scanParams.match(keyPattern);
 
-        List<String> keysList = new ArrayList<>();
+        final List<String> keysList = new ArrayList<>();
+        final List<Future<List<String>>> futureList = new ArrayList<>();
 
         Map<String, JedisPool> nodes = getJedisCluster().getClusterNodes();
         for (Map.Entry<String, JedisPool> entry : nodes.entrySet()) {
-            Jedis jedis = null;
-            try {
-                jedis = entry.getValue().getResource();
+            try (Jedis jedis = entry.getValue().getResource()) {
                 if (isMaster(jedis.clusterNodes(), jedis.getClient().getHost() + ":" + jedis.getClient().getPort())) {
-                    ScanResult<String> scanResult = jedis.scan("0", scanParams);
-                    keysList.addAll(scanResult.getResult());
-                }
-            } finally {
-                if (jedis != null) {
-                    jedis.close();
+                    futureList.add(MyExecutors.FIXED.submit(new Callable<List<String>>() {
+                        @Override
+                        public List<String> call() throws Exception {
+                            ScanResult<String> scanResult = jedis.scan("0", scanParams);
+                            return scanResult.getResult();
+                        }
+                    }));
                 }
             }
         }
-        Collections.sort(keysList);
-
-        if (keysList.size() > SUGGEST_SIZE) {
-            return keysList.subList(0, 10);
-        } else {
-            return keysList;
+        for (Future<List<String>> future : futureList) {
+            try {
+                keysList.addAll(future.get());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
         }
+
+        Collections.sort(keysList);
+        return keysList;
     }
 
     private boolean isMaster(String clusterNodes, String hostAndPort) {
