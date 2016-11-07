@@ -19,13 +19,13 @@
                 $("#nodesTable tbody").empty();
                 $.each(data, function (index, myNode) {
                     var tr = $("<tr/>");
-                    tr.append("<td>" + myNode.node.type + "</td>");
-                    tr.append("<td>" + myNode.node.id + "</td>");
-                    tr.append("<td>" + myNode.node.host + "</td>");
-                    tr.append("<td>" + myNode.node.port + "</td>");
+                    tr.append("<td>" + myNode.type + "</td>");
+                    tr.append("<td>" + myNode.id + "</td>");
+                    tr.append("<td>" + myNode.host + "</td>");
+                    tr.append("<td>" + myNode.port + "</td>");
                     tr.append("<td>" + formatMySlotRangeList(myNode.mySlotRangeList) + "</td>");
-                    tr.append("<td>" + myNode.node.linkState + "</td>");
-                    tr.append("<td>" + myNode.node.flags + "</td>");
+                    tr.append("<td>" + myNode.linkState + "</td>");
+                    tr.append("<td>" + myNode.flags + "</td>");
                     $("#nodesTable tbody").append(tr);
                 });
             });

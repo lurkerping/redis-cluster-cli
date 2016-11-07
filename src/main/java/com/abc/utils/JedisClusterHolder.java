@@ -40,7 +40,11 @@ public final class JedisClusterHolder {
     }
 
     public List<MyRedisClusterNode> getNodes(String node) {
-        return nodesMap.get(node);
+        if (node != null) {
+            return nodesMap.get(node);
+        } else {
+            return null;
+        }
     }
 
     public synchronized void register(String node) {
