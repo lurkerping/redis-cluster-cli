@@ -45,5 +45,4 @@ public class MyExecutors {
 
     public static final ExecutorService FIXED = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), new DefaultThreadFactory("FIXED"));
 
-
 }
