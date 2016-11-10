@@ -1,10 +1,13 @@
 package com.abc;
 
+import com.abc.utils.JedisClusterHolder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
 import redis.clients.jedis.HostAndPort;
@@ -23,6 +26,16 @@ public class RedisCliApplication {
 
     @Value("${redis.cluster.nodes:127.0.0.1:6379}")
     private String redisClusterNode = null;
+
+    @Bean
+    public ApplicationListener<ContextRefreshedEvent> applicationListener() {
+        return new ApplicationListener<ContextRefreshedEvent>() {
+            @Override
+            public void onApplicationEvent(ContextRefreshedEvent event) {
+                JedisClusterHolder.getInstance().register(redisClusterNode, getJedisCluster());
+            }
+        };
+    }
 
     @Bean
     public JedisCluster getJedisCluster() {

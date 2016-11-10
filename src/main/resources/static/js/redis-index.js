@@ -31,7 +31,26 @@
             });
         }
 
+        function loadClusters(){
+            $.getJSON("/home/connectedClusters", function (res) {
+                $("#nodesTable tbody").empty();
+                if(res.retCode == "succ"){
+                    $.each(res.data, function (index, clusterBaseInfo) {
+                        var tr = $("<tr/>");
+                        tr.append("<td>" + clusterBaseInfo.host + "</td>");
+                        tr.append("<td>" + clusterBaseInfo.port + "</td>");
+                        tr.append("<td>" + clusterBaseInfo.current + "</td>");
+                        $("#connectedClustersTable tbody").append(tr);
+                    });
+                }else{
+                    alert(data.retMsg);
+                }
+            });
+        }
+
         loadNodes();
+
+        loadClusters();
 
         $("#hostInfoBtn").click(function (event) {
             event.preventDefault();

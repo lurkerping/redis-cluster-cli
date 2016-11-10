@@ -39,11 +39,35 @@ public final class JedisClusterHolder {
         return simpleMap.contains(node) ? simpleMap.get(node) : defaultJedisCluster;
     }
 
+    public Map<String, JedisCluster> getSimpleMap() {
+        return Collections.unmodifiableMap(simpleMap);
+    }
+
+    public Map<String, List<MyRedisClusterNode>> getNodesMap() {
+        return Collections.unmodifiableMap(nodesMap);
+    }
+
     public List<MyRedisClusterNode> getNodes(String node) {
         if (node != null) {
             return nodesMap.get(node);
         } else {
             return null;
+        }
+    }
+
+    public synchronized void register(String node, JedisCluster jc) {
+        if (simpleMap.contains(node)) {
+            return;
+        } else {
+            Set<HostAndPort> jedisClusterNodes = new HashSet<>();
+            jedisClusterNodes.add(HostAndPort.parseString(node));
+            try {
+                simpleMap.put(node, jc);
+                this.parseClusterNodes(node, jc);
+            } catch (Exception e) {
+                throw new RuntimeException(" fail to connect redis cluster, node:" + node, e);
+            }
+
         }
     }
 
@@ -57,20 +81,23 @@ public final class JedisClusterHolder {
                 JedisCluster jc = new JedisCluster(jedisClusterNodes);
                 jc.get("foo52");
                 simpleMap.put(node, jc);
-                List<MyRedisClusterNode> nodes = new ArrayList<>();
-                for (Map.Entry<String, JedisPool> entry : jc.getClusterNodes().entrySet()) {
-                    String clusterNodes = entry.getValue().getResource().clusterNodes();
-                    for (String clusterNode : clusterNodes.split("\n")) {
-                        nodes.add(REDIS_CLUSTER_NODE_CONVERTER.convert(clusterNode));
-                    }
-                    nodesMap.put(node, nodes);
-                    break;
-                }
-
+                this.parseClusterNodes(node, jc);
             } catch (Exception e) {
                 throw new RuntimeException(" fail to connect redis cluster, node:" + node, e);
             }
 
+        }
+    }
+
+    private void parseClusterNodes(String node, JedisCluster jc) {
+        List<MyRedisClusterNode> nodes = new ArrayList<>();
+        for (Map.Entry<String, JedisPool> entry : jc.getClusterNodes().entrySet()) {
+            String clusterNodes = entry.getValue().getResource().clusterNodes();
+            for (String clusterNode : clusterNodes.split("\n")) {
+                nodes.add(REDIS_CLUSTER_NODE_CONVERTER.convert(clusterNode));
+            }
+            nodesMap.put(node, nodes);
+            break;
         }
     }
 
