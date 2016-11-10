@@ -1,31 +1,42 @@
 package com.abc.web;
 
-import com.abc.dto.HostInfo;
+import com.abc.common.MyExecutors;
 import com.abc.dto.KeyInfo;
-import com.abc.utils.StringRedisTemplateHolder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.ScanParams;
+import redis.clients.jedis.ScanResult;
 
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 @RestController
-public class KeysController {
+public class KeysController extends BaseController {
 
     public static final int SUGGEST_SIZE = 10;
 
-    @Autowired
-    private StringRedisTemplate stringRedisTemplate;
-
-    @Autowired
-    private HostInfo hostInfo;
-
     @RequestMapping(value = "/keys", method = RequestMethod.GET)
     public List<String> keyList(@RequestParam(required = false, defaultValue = "*", name = "term") String keyPattern) {
-        return this.getKeyList(keyPattern);
+        List<String> keysList = this.getKeyList(keyPattern);
+        if (keysList.size() > SUGGEST_SIZE) {
+            return keysList.subList(0, SUGGEST_SIZE);
+        } else {
+            return keysList;
+        }
     }
 
     @RequestMapping(value = "/keyInfoList", method = RequestMethod.GET)
@@ -35,8 +46,8 @@ public class KeysController {
         for (String key : keyList) {
             KeyInfo keyInfo = new KeyInfo();
             keyInfo.setKey(key);
-            keyInfo.setDataType(StringRedisTemplateHolder.getInstance().getStringRedisTemplate(hostInfo.getNode(), stringRedisTemplate).type(key).code());
-            keyInfo.setTtl(StringRedisTemplateHolder.getInstance().getStringRedisTemplate(hostInfo.getNode(), stringRedisTemplate).getExpire(key));
+            keyInfo.setDataType(getJedisCluster().type(key));
+            keyInfo.setTtl(getJedisCluster().ttl(key));
             keyInfoList.add(keyInfo);
         }
         return keyInfoList;
@@ -49,21 +60,54 @@ public class KeysController {
         if (!keyPattern.endsWith("*")) {
             keyPattern += "*";
         }
+        final ScanParams scanParams = new ScanParams();
+        scanParams.count(SUGGEST_SIZE);
+        scanParams.match(keyPattern);
 
-        Set<String> allKeys = StringRedisTemplateHolder.getInstance().getStringRedisTemplate(hostInfo.getNode(), stringRedisTemplate).keys(keyPattern);
+        final List<String> keysList = new ArrayList<>();
+        final List<Future<List<String>>> futureList = new ArrayList<>();
 
-        List<String> keysList = new ArrayList<>();
-        Iterator<String> keyIterator = allKeys.iterator();
-        while (keyIterator.hasNext()) {
-            keysList.add(keyIterator.next());
+        Map<String, JedisPool> nodes = getJedisCluster().getClusterNodes();
+        for (Map.Entry<String, JedisPool> entry : nodes.entrySet()) {
+            try (Jedis jedis = entry.getValue().getResource()) {
+                if (isMaster(jedis.clusterNodes(), jedis.getClient().getHost() + ":" + jedis.getClient().getPort())) {
+                    futureList.add(MyExecutors.FIXED.submit(new Callable<List<String>>() {
+                        @Override
+                        public List<String> call() throws Exception {
+                            ScanResult<String> scanResult = jedis.scan("0", scanParams);
+                            return scanResult.getResult();
+                        }
+                    }));
+                }
+            }
         }
+        for (Future<List<String>> future : futureList) {
+            try {
+                keysList.addAll(future.get());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+
         Collections.sort(keysList);
+        return keysList;
+    }
 
-        if (keysList.size() > SUGGEST_SIZE) {
-            return keysList.subList(0, 10);
-        } else {
-            return keysList;
+    private boolean isMaster(String clusterNodes, String hostAndPort) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(clusterNodes.getBytes(StandardCharsets.UTF_8))))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] clusterNode = line.split(" ");
+                if (hostAndPort.equals(clusterNode[1]) && clusterNode[2].indexOf("master") > 0) {
+                    return true;
+                }
+            }
+        } catch (IOException e) {
+            //not gonna happen
         }
+        return false;
     }
 
 }

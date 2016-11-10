@@ -1,15 +1,13 @@
 package com.abc.dto;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.Map;
 
-public class ResponseData implements Serializable {
+public class ResponseData<T> implements Serializable {
 
     private String retCode;
     private String retMsg;
 
-    private Map<String, String> data;
+    private T data;
 
     public ResponseData() {
     }
@@ -19,10 +17,10 @@ public class ResponseData implements Serializable {
         this.retMsg = retMsg;
     }
 
-    public ResponseData(String retCode, String retMsg, Map<String, String> data) {
+    public ResponseData(String retCode, String retMsg, T data) {
         this.retCode = retCode;
         this.retMsg = retMsg;
-        this.data = data == null ? null : Collections.unmodifiableMap(data);
+        this.data = data;
     }
 
     public String getRetCode() {
@@ -33,8 +31,8 @@ public class ResponseData implements Serializable {
         return retMsg;
     }
 
-    public Map<String, String> getData() {
-        return data == null ? null : Collections.unmodifiableMap(data);
+    public T getData() {
+        return data;
     }
 
     @Override
