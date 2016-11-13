@@ -5,7 +5,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.util.Assert;
 
 /**
- * convert a jedis'clusterInfo line to MyRedisClusterNode
+ * convert a Jedis.clusterNodes() line to MyRedisClusterNode
  */
 public class MyRedisClusterNodeConverter implements Converter<String, MyRedisClusterNode> {
 

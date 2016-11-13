@@ -3,12 +3,13 @@ package com.abc.utils;
 import com.abc.common.MyRedisClusterNodeConverter;
 import com.abc.dto.MyRedisClusterNode;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.Assert;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPool;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  * a map containing some Jedis Cluster Objects
@@ -19,13 +20,13 @@ public final class JedisClusterHolder {
 
     private static final MyRedisClusterNodeConverter REDIS_CLUSTER_NODE_CONVERTER = new MyRedisClusterNodeConverter();
 
-    private ConcurrentHashMap<String, JedisCluster> simpleMap = null;
+    private Map<String, JedisCluster> clusterMap = null;
 
-    private ConcurrentHashMap<String, List<MyRedisClusterNode>> nodesMap = null;
+    private Map<String, List<MyRedisClusterNode>> clusterNodesMap = null;
 
     private JedisClusterHolder() {
-        simpleMap = new ConcurrentHashMap<>();
-        nodesMap = new ConcurrentHashMap<>();
+        clusterMap = new ConcurrentSkipListMap<>();
+        clusterNodesMap = new ConcurrentSkipListMap<>();
     }
 
     public static final JedisClusterHolder getInstance() {
@@ -36,43 +37,39 @@ public final class JedisClusterHolder {
         if (StringUtils.isBlank(node)) {
             return defaultJedisCluster;
         }
-        return simpleMap.contains(node) ? simpleMap.get(node) : defaultJedisCluster;
+        return clusterMap.containsKey(node) ? clusterMap.get(node) : defaultJedisCluster;
     }
 
-    public Map<String, JedisCluster> getSimpleMap() {
-        return Collections.unmodifiableMap(simpleMap);
+    public Map<String, JedisCluster> getClusterMap() {
+        return Collections.unmodifiableMap(clusterMap);
     }
 
-    public Map<String, List<MyRedisClusterNode>> getNodesMap() {
-        return Collections.unmodifiableMap(nodesMap);
+    public Map<String, List<MyRedisClusterNode>> getClusterNodesMap() {
+        return Collections.unmodifiableMap(clusterNodesMap);
     }
 
     public List<MyRedisClusterNode> getNodes(String node) {
         if (node != null) {
-            return nodesMap.get(node);
+            return clusterNodesMap.get(node);
         } else {
             return null;
         }
     }
 
     public synchronized void register(String node, JedisCluster jc) {
-        if (simpleMap.contains(node)) {
+        Assert.notNull(node);
+        Assert.notNull(jc);
+        if (clusterMap.containsKey(node)) {
             return;
         } else {
-            Set<HostAndPort> jedisClusterNodes = new HashSet<>();
-            jedisClusterNodes.add(HostAndPort.parseString(node));
-            try {
-                simpleMap.put(node, jc);
-                this.parseClusterNodes(node, jc);
-            } catch (Exception e) {
-                throw new RuntimeException(" fail to connect redis cluster, node:" + node, e);
-            }
-
+            List<MyRedisClusterNode> nodes = parseClusterNodes(jc);
+            registerAll(jc, nodes);
         }
     }
 
     public synchronized void register(String node) {
-        if (simpleMap.contains(node)) {
+        Assert.notNull(node);
+        if (clusterMap.containsKey(node)) {
             return;
         } else {
             Set<HostAndPort> jedisClusterNodes = new HashSet<>();
@@ -80,8 +77,8 @@ public final class JedisClusterHolder {
             try {
                 JedisCluster jc = new JedisCluster(jedisClusterNodes);
                 jc.get("foo52");
-                simpleMap.put(node, jc);
-                this.parseClusterNodes(node, jc);
+                List<MyRedisClusterNode> nodes = parseClusterNodes(jc);
+                this.registerAll(jc, nodes);
             } catch (Exception e) {
                 throw new RuntimeException(" fail to connect redis cluster, node:" + node, e);
             }
@@ -89,16 +86,24 @@ public final class JedisClusterHolder {
         }
     }
 
-    private void parseClusterNodes(String node, JedisCluster jc) {
+    private void registerAll(JedisCluster jc, List<MyRedisClusterNode> nodes) {
+        for (MyRedisClusterNode clusterNode : nodes) {
+            String curNode = clusterNode.getHost() + ":" + clusterNode.getPort();
+            clusterMap.put(curNode, jc);
+            clusterNodesMap.put(curNode, nodes);
+        }
+    }
+
+    private List<MyRedisClusterNode> parseClusterNodes(JedisCluster jc) {
         List<MyRedisClusterNode> nodes = new ArrayList<>();
         for (Map.Entry<String, JedisPool> entry : jc.getClusterNodes().entrySet()) {
             String clusterNodes = entry.getValue().getResource().clusterNodes();
             for (String clusterNode : clusterNodes.split("\n")) {
                 nodes.add(REDIS_CLUSTER_NODE_CONVERTER.convert(clusterNode));
             }
-            nodesMap.put(node, nodes);
-            break;
+            return nodes;
         }
+        return nodes;
     }
 
 }

@@ -14,10 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import redis.clients.jedis.JedisCluster;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * for index.html
@@ -47,8 +44,8 @@ public class HomeController extends BaseController {
     @RequestMapping(value = "/connectedClusters", method = RequestMethod.GET)
     public ResponseData connectedClusters() {
         List<Map<String, String>> clusterBaseInfoList = new ArrayList<>();
-        Map<String, JedisCluster> simpleMap = JedisClusterHolder.getInstance().getSimpleMap();
-        for (String key : simpleMap.keySet()) {
+        Map<String, JedisCluster> clusterMap = JedisClusterHolder.getInstance().getClusterMap();
+        for (String key : clusterMap.keySet()) {
             Map<String, String> clusterBaseInfo = new HashMap<>();
             clusterBaseInfo.put("host", key.split(":")[0]);
             clusterBaseInfo.put("port", key.split(":")[1]);
