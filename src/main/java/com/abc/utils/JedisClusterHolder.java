@@ -3,6 +3,8 @@ package com.abc.utils;
 import com.abc.common.MyRedisClusterNodeConverter;
 import com.abc.dto.MyRedisClusterNode;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
@@ -15,6 +17,8 @@ import java.util.concurrent.ConcurrentSkipListMap;
  * a map containing some Jedis Cluster Objects
  */
 public final class JedisClusterHolder {
+
+    private static final Logger logger = LoggerFactory.getLogger(JedisClusterHolder.class);
 
     public static final JedisClusterHolder instance = new JedisClusterHolder();
 
@@ -98,9 +102,18 @@ public final class JedisClusterHolder {
         List<MyRedisClusterNode> nodes = new ArrayList<>();
         for (Map.Entry<String, JedisPool> entry : jc.getClusterNodes().entrySet()) {
             String clusterNodes = entry.getValue().getResource().clusterNodes();
+            logger.info(clusterNodes);
             for (String clusterNode : clusterNodes.split("\n")) {
                 nodes.add(REDIS_CLUSTER_NODE_CONVERTER.convert(clusterNode));
             }
+            Collections.sort(nodes, new Comparator<MyRedisClusterNode>() {
+                @Override
+                public int compare(MyRedisClusterNode o1, MyRedisClusterNode o2) {
+                    String t1 = StringUtils.trimToEmpty(o1.getMasterId()) + o1.getId();
+                    String t2 = StringUtils.trimToEmpty(o2.getMasterId()) + o2.getId();
+                    return t1.compareTo(t2);
+                }
+            });
             return nodes;
         }
         return nodes;

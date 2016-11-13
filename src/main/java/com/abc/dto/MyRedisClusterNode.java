@@ -1,16 +1,13 @@
 package com.abc.dto;
 
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 /**
  * represent a redis Cluster's node info
  */
-public class MyRedisClusterNode implements Comparator<MyRedisClusterNode> {
+public class MyRedisClusterNode {
 
     private String id;
     private String type;
@@ -95,13 +92,6 @@ public class MyRedisClusterNode implements Comparator<MyRedisClusterNode> {
 
     public List<MySlotRange> getMySlotRangeList() {
         return mySlotRangeList;
-    }
-
-    @Override
-    public int compare(MyRedisClusterNode o1, MyRedisClusterNode o2) {
-        String t1 = o1.getId() + StringUtils.trimToEmpty(o1.getMasterId());
-        String t2 = o2.getId() + StringUtils.trimToEmpty(o2.getMasterId());
-        return t1.compareTo(t2);
     }
 
 }

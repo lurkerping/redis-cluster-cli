@@ -14,8 +14,8 @@
             return result;
         }
 
-        function loadNodes() {
-            $.getJSON("/nodes", function (data) {
+        function loadNodes(node) {
+            $.getJSON("/nodes", {node: node}, function (data) {
                 $("#nodesTable tbody").empty();
                 $.each(data, function (index, myNode) {
                     var tr = $("<tr/>");
@@ -31,10 +31,10 @@
             });
         }
 
-        function loadClusters(){
+        function loadClusters() {
             $.getJSON("/home/connectedClusters", function (res) {
-                $("#nodesTable tbody").empty();
-                if(res.retCode == "succ"){
+                $("#connectedClustersTable tbody").empty();
+                if (res.retCode == "succ") {
                     $.each(res.data, function (index, clusterBaseInfo) {
                         var tr = $("<tr/>");
                         tr.append("<td>" + clusterBaseInfo.host + "</td>");
@@ -42,26 +42,31 @@
                         tr.append("<td>" + clusterBaseInfo.current + "</td>");
                         $("#connectedClustersTable tbody").append(tr);
                     });
-                }else{
+                    $("#connectedClustersTable tbody tr:first").click();
+                } else {
                     alert(data.retMsg);
                 }
             });
         }
-
-        loadNodes();
-
-        loadClusters();
 
         $("#hostInfoBtn").click(function (event) {
             event.preventDefault();
             var hostInfo = $("#hostInfo").val();
             $.post("/home/connect", {node: hostInfo}, function (data) {
                 if (data.retCode == "succ") {
-                    loadNodes();
+                    loadNodes(hostInfo);
                 }
                 alert(data.retMsg);
             })
         });
+
+        $("#connectedClustersTable tbody").on("click", "tr", function () {
+            var host = $("td:first-child", $(this)).text();
+            var port = $("td:nth-child(2)", $(this)).text();
+            loadNodes(host + ":" + port)
+        });
+
+        loadClusters();
 
     });
 })(jQuery);

@@ -16,8 +16,8 @@ import java.util.List;
 public class NodesController extends BaseController {
 
     @RequestMapping(value = "/nodes", method = RequestMethod.GET)
-    public List<MyRedisClusterNode> nodes() {
-        List<MyRedisClusterNode> nodes = JedisClusterHolder.getInstance().getNodes(hostInfo.getNode());
+    public List<MyRedisClusterNode> nodes(String node) {
+        List<MyRedisClusterNode> nodes = JedisClusterHolder.getInstance().getNodes(node);
         if (nodes == null) {
             nodes = new ArrayList<>();
         }

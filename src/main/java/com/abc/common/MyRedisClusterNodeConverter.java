@@ -38,7 +38,9 @@ public class MyRedisClusterNodeConverter implements Converter<String, MyRedisClu
         myNode.setFlags(fields[2]);
         myNode.setType(fields[2].indexOf("master") > -1 ? "master" : "slave");
         myNode.setLinkState(fields[7]);
-        myNode.setMasterId(fields[3]);
+        if(!"-".equals(fields[3])){
+            myNode.setMasterId(fields[3]);
+        }
         if (fields.length > 8) {
             myNode.getMySlotRangeList().addAll(SLOT_RANGE_CONVERTER.convert(fields[8]));
         }
