@@ -74,8 +74,16 @@ public class KeysController extends BaseController {
                     futureList.add(MyExecutors.FIXED.submit(new Callable<List<String>>() {
                         @Override
                         public List<String> call() throws Exception {
+                            //scan MATCH过滤器是在scan cursor之后才调用的，也就是说
+                            //scan 0 MATCH abc*可能没有返回元素，但是scan 1 MATCH abc*会返回元素
+                            List<String> resultList = new ArrayList<>();
                             ScanResult<String> scanResult = jedis.scan("0", scanParams);
-                            return scanResult.getResult();
+                            resultList.addAll(scanResult.getResult());
+                            while (resultList.size() < SUGGEST_SIZE && !"0".equals(scanResult.getStringCursor())) {
+                                scanResult = jedis.scan(scanResult.getStringCursor(), scanParams);
+                                resultList.addAll(scanResult.getResult());
+                            }
+                            return resultList;
                         }
                     }));
                 }
