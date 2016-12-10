@@ -14,7 +14,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import redis.clients.jedis.JedisCluster;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * for index.html
@@ -56,8 +59,7 @@ public class HomeController extends BaseController {
             }
             clusterBaseInfoList.add(clusterBaseInfo);
         }
-        ResponseData responseData = new ResponseData(MyConstants.CODE_SUCC, "yeah", clusterBaseInfoList);
-        return responseData;
+        return new ResponseData<List>(MyConstants.CODE_SUCC, "yeah", clusterBaseInfoList);
     }
 
 }
